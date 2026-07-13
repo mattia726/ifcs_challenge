@@ -17,6 +17,11 @@
 \definecolor{deepblue}{RGB}{31,80,126}
 \definecolor{riskred}{RGB}{180,50,50}
 \definecolor{safegreen}{RGB}{40,120,75}
+\definecolor{clusterA}{RGB}{44,135,130}
+\definecolor{clusterB}{RGB}{76,138,150}
+\definecolor{clusterC}{RGB}{205,158,55}
+\definecolor{clusterD}{RGB}{198,102,54}
+\definecolor{clusterE}{RGB}{185,55,62}
 \setbeamercolor{title}{fg=white,bg=deepblue}
 \setbeamercolor{subtitle}{fg=white}
 \setbeamercolor{frametitle}{fg=white,bg=deepblue}
@@ -28,6 +33,12 @@
 \date{}
 
 \newcommand{\pct}[1]{#1\%}
+\newcommand{\liftentry}[2]{#1\\[-0.05cm]{\bfseries #2}\\[0.16cm]}
+\newcommand{\clusterhead}[3]{%
+  {\color{#1}\rule{0.6ex}{0.6ex}}\hspace{0.45em}{\bfseries #2}\\[-0.02cm]
+  {\footnotesize #3}\\[-0.06cm]
+  {\color{#1}\rule{\linewidth}{0.7pt}}\\[0.12cm]
+}
 
 \begin{document}
 
@@ -166,27 +177,54 @@
   \end{columns}
 \end{frame}
 
-\begin{frame}{PCA View: Sector Interpretation}
-  \begin{columns}[T,totalwidth=\textwidth]
-    \begin{column}{0.54\textwidth}
-      \includegraphics[width=\textwidth]{cluster_pca.png}
-    \end{column}
-    \begin{column}{0.42\textwidth}
-      \scriptsize
-      \textbf{Sector lift reading}
-      \begin{itemize}
-        \item \textbf{A Cash generators:} professional/technical services, health, software, hotels.
-        \item \textbf{B Profitable core:} wholesale trade, ICT equipment, machinery and food wholesale.
-        \item \textbf{C Thin-margin:} restaurants, food retail, bars, cleaning, motor-vehicle parts.
-        \item \textbf{D Debt-burdened:} rubber, printing, beverages, textiles, waste collection.
-        \item \textbf{E Loss-making:} R\&D, sports, real estate operations, advertising, leather/textiles.
-      \end{itemize}
+\begin{frame}{Sector Mix Explains Why Some Profiles Are More Exposed}
+  \small
+  Top over-represented sectors per cluster, by lift vs. each sector's overall
+  share of the dataset.
 
-      \vspace{0.08cm}
-      \textbf{Important:} sectors are not clustering inputs. This is a
-      post-clustering lift analysis using sectors with at least 30 firms.
+  \vspace{0.28cm}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.184\textwidth}
+      \scriptsize
+      \clusterhead{clusterA}{A}{Cash generators}
+      \liftentry{Insurance \& pension funds}{2.8x}
+      \liftentry{Professional \& scientific services}{2.1x}
+      \liftentry{Human health services}{2.0x}
+    \end{column}
+    \begin{column}{0.184\textwidth}
+      \scriptsize
+      \clusterhead{clusterB}{B}{Healthy core}
+      \liftentry{Non-specialized wholesale trade}{1.5x}
+      \liftentry{Wholesale -- ICT equipment}{1.4x}
+      \liftentry{Wholesale -- specialized products}{1.4x}
+    \end{column}
+    \begin{column}{0.184\textwidth}
+      \scriptsize
+      \clusterhead{clusterC}{C}{Thin margins}
+      \liftentry{Specialized food \& beverage retail}{1.7x}
+      \liftentry{Restaurants \& mobile food service}{1.5x}
+      \liftentry{Shipbuilding}{1.5x}
+    \end{column}
+    \begin{column}{0.184\textwidth}
+      \scriptsize
+      \clusterhead{clusterD}{D}{Debt-burdened}
+      \liftentry{Rubber products manufacturing}{4.7x}
+      \liftentry{Printing services}{4.3x}
+      \liftentry{Beverage manufacturing}{3.8x}
+    \end{column}
+    \begin{column}{0.184\textwidth}
+      \scriptsize
+      \clusterhead{clusterE}{E}{Loss-making}
+      \liftentry{R\&D -- natural sciences \& engineering}{5.0x}
+      \liftentry{Sports activities}{4.2x}
+      \liftentry{Real estate renting \& operating}{4.0x}
     \end{column}
   \end{columns}
+
+  \vfill
+  \scriptsize
+  \textbf{Note:} sector is not used to form the clusters; this is a
+  post-clustering lift analysis using sectors with at least 30 firms.
 \end{frame}
 
 \begin{frame}{Geography of Fragile Profiles}
