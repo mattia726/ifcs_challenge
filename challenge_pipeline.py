@@ -454,6 +454,107 @@ def summarize_scores(
     return rows, base
 
 
+def write_ensemble_oof_true_predicted_plot(
+    oof: pd.DataFrame,
+    threshold_map: dict[str, float],
+    outdir: Path,
+) -> None:
+    """Write graph data and a true-vs-predicted diagnostic for the OOF ensemble."""
+    if TARGET not in oof.columns or "rank_ensemble" not in oof.columns:
+        return
+
+    threshold = threshold_map["best_f1"]
+    y_true = oof[TARGET].astype(int).to_numpy()
+    scores = oof["rank_ensemble"].to_numpy()
+    predicted = scores >= threshold
+
+    rng = np.random.default_rng(RANDOM_STATE)
+    x_jitter = y_true + rng.uniform(-0.18, 0.18, size=len(oof))
+    plot_df = pd.DataFrame(
+        {
+            "row_id": np.arange(len(oof)),
+            "true_label": y_true,
+            "true_class": np.where(y_true == 1, "TRUE", "FALSE"),
+            "ensemble_oof_score": scores,
+            "best_f1_threshold": threshold,
+            "predicted_label_best_f1": predicted.astype(int),
+            "predicted_class_best_f1": np.where(predicted, "TRUE", "FALSE"),
+            "plot_x": x_jitter,
+            "plot_y": scores,
+        }
+    )
+    plot_df.to_csv(
+        outdir / "graph_data_ensemble_oof_true_predicted.csv",
+        index=False,
+    )
+
+    confusion = (
+        plot_df.groupby(["true_class", "predicted_class_best_f1"])
+        .size()
+        .rename("count")
+        .reset_index()
+    )
+    confusion.to_csv(outdir / "ensemble_oof_confusion_best_f1.csv", index=False)
+
+    try:
+        import matplotlib.pyplot as plt
+
+        colors = np.where(y_true == 1, "#d62728", "#1f77b4")
+        fig, ax = plt.subplots(figsize=(8.5, 5.5))
+        ax.scatter(
+            plot_df["plot_x"],
+            plot_df["plot_y"],
+            c=colors,
+            s=10,
+            alpha=0.24,
+            linewidths=0,
+        )
+        ax.axhline(
+            threshold,
+            color="#111111",
+            linestyle="--",
+            linewidth=1.2,
+            label=f"best F1 threshold = {threshold:.2f}",
+        )
+
+        grouped = plot_df.groupby("true_label")["ensemble_oof_score"]
+        medians = grouped.median()
+        means = grouped.mean()
+        ax.scatter(
+            [0, 1],
+            [medians.get(0, np.nan), medians.get(1, np.nan)],
+            marker="D",
+            s=70,
+            color="#111111",
+            label="median score",
+            zorder=5,
+        )
+        ax.scatter(
+            [0, 1],
+            [means.get(0, np.nan), means.get(1, np.nan)],
+            marker="X",
+            s=85,
+            color="#ffbf00",
+            edgecolors="#111111",
+            linewidths=0.6,
+            label="mean score",
+            zorder=6,
+        )
+        ax.set_title("Ensemble OOF true vs predicted scores")
+        ax.set_xlabel("True financial distress")
+        ax.set_ylabel("Rank-ensemble OOF score")
+        ax.set_xticks([0, 1])
+        ax.set_xticklabels(["FALSE", "TRUE"])
+        ax.set_ylim(-0.03, 1.03)
+        ax.grid(axis="y", alpha=0.25)
+        ax.legend(loc="upper left", fontsize=8)
+        fig.tight_layout()
+        fig.savefig(outdir / "ensemble_oof_true_predicted.png", dpi=180)
+        plt.close(fig)
+    except Exception as exc:
+        log(f"  ensemble OOF true-vs-predicted plot skipped: {exc}")
+
+
 def run_cv_models(
     x: pd.DataFrame,
     y: np.ndarray,
@@ -536,6 +637,7 @@ def run_cv_models(
     pd.DataFrame(metrics).to_csv(outdir / "cv_metrics.csv", index=False)
     oof.insert(0, TARGET, y)
     oof.to_csv(outdir / "oof_predictions.csv", index=False)
+    write_ensemble_oof_true_predicted_plot(oof, threshold_map, outdir)
     return oof, pd.DataFrame(metrics), threshold_map
 
 
@@ -906,6 +1008,32 @@ def run_clustering(df: pd.DataFrame, outdir: Path) -> pd.DataFrame:
     pca_df.to_csv(outdir / "cluster_pca_coordinates.csv", index=False)
     pca_df.to_csv(outdir / "graph_data_cluster_pca.csv", index=False)
 
+    try:
+        from umap import UMAP
+
+        umap_model = UMAP(
+            n_components=2,
+            n_neighbors=30,
+            min_dist=0.10,
+            metric="euclidean",
+            random_state=RANDOM_STATE,
+        )
+        umap_coords = umap_model.fit_transform(z)
+        umap_df = pd.DataFrame(
+            {
+                ID_COL: df[ID_COL],
+                "umap1": umap_coords[:, 0],
+                "umap2": umap_coords[:, 1],
+                "cluster": work_region["cluster"],
+                TARGET: work_region[TARGET],
+            }
+        )
+        umap_df.to_csv(outdir / "cluster_umap_coordinates.csv", index=False)
+        umap_df.to_csv(outdir / "graph_data_cluster_umap.csv", index=False)
+    except ImportError:
+        umap_df = None
+        log("  UMAP output skipped: install umap-learn to enable it.")
+
     region_plot_df = high_region.sort_values("high_risk_cluster_share").reset_index()
     region_plot_df["high_risk_cluster_share_pct"] = (
         region_plot_df["high_risk_cluster_share"] * 100
@@ -929,6 +1057,24 @@ def run_clustering(df: pd.DataFrame, outdir: Path) -> pd.DataFrame:
         fig.tight_layout()
         fig.savefig(outdir / "cluster_pca.png", dpi=180)
         plt.close(fig)
+
+        if umap_df is not None:
+            fig, ax = plt.subplots(figsize=(9, 6))
+            for cluster, sub in umap_df.groupby("cluster"):
+                ax.scatter(
+                    sub["umap1"],
+                    sub["umap2"],
+                    s=8,
+                    alpha=0.35,
+                    label=cluster,
+                )
+            ax.set_title("Financial profile clusters, UMAP view")
+            ax.set_xlabel("UMAP1")
+            ax.set_ylabel("UMAP2")
+            ax.legend(fontsize=7, markerscale=2)
+            fig.tight_layout()
+            fig.savefig(outdir / "cluster_umap.png", dpi=180)
+            plt.close(fig)
 
         fig, ax = plt.subplots(figsize=(9, 6))
         plot_df = region_plot_df.set_index("Region")
