@@ -12,11 +12,14 @@ from __future__ import annotations
 
 import argparse
 import json
+import shutil
 import warnings
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
 
+import joblib
+import matplotlib
 import numpy as np
 import pandas as pd
 from scipy.stats import rankdata
@@ -44,6 +47,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, RobustScaler
 
 warnings.filterwarnings("ignore")
+matplotlib.use("Agg")
 
 
 RANDOM_STATE = 42
@@ -669,6 +673,78 @@ def fit_final_models(x: pd.DataFrame, y: np.ndarray, quick: bool) -> list[Traine
     return trained
 
 
+def save_trained_models(
+    trained: list[TrainedModel],
+    threshold_map: dict[str, float],
+    model_dir: Path,
+    quick: bool,
+    n_splits: int,
+) -> None:
+    ensure_dir(model_dir)
+    manifest_rows = []
+    for item in trained:
+        filename = f"{item.name}.joblib"
+        path = model_dir / filename
+        joblib.dump(
+            {
+                "name": item.name,
+                "estimator": item.estimator,
+                "feature_frame": item.feature_frame,
+            },
+            path,
+            compress=3,
+        )
+        manifest_rows.append(
+            {
+                "model": item.name,
+                "file": filename,
+                "feature_count": int(item.feature_frame.shape[1]),
+                "training_rows": int(item.feature_frame.shape[0]),
+            }
+        )
+
+    pd.DataFrame(manifest_rows).to_csv(model_dir / "model_manifest.csv", index=False)
+    metadata = {
+        "target": TARGET,
+        "id_column": ID_COL,
+        "categorical_columns": CAT_COLS,
+        "model_order": [item.name for item in trained],
+        "threshold_map": threshold_map,
+        "quick": bool(quick),
+        "cv_splits": int(n_splits),
+        "feature_columns": trained[0].feature_frame.columns.tolist() if trained else [],
+        "prediction_entrypoint": "predict_from_saved_models.py",
+    }
+    (model_dir / "model_metadata.json").write_text(
+        json.dumps(metadata, indent=2),
+        encoding="utf-8",
+    )
+    log(f"Saved trained models to {model_dir}")
+
+
+def load_trained_models(model_dir: Path) -> tuple[list[TrainedModel], dict[str, object]]:
+    metadata_path = model_dir / "model_metadata.json"
+    manifest_path = model_dir / "model_manifest.csv"
+    if not metadata_path.exists():
+        raise FileNotFoundError(metadata_path)
+    if not manifest_path.exists():
+        raise FileNotFoundError(manifest_path)
+
+    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    manifest = pd.read_csv(manifest_path)
+    trained = []
+    for row in manifest.itertuples(index=False):
+        record = joblib.load(model_dir / row.file)
+        trained.append(
+            TrainedModel(
+                name=record["name"],
+                estimator=record["estimator"],
+                feature_frame=record["feature_frame"],
+            )
+        )
+    return trained, metadata
+
+
 def align_hgb_test(train_x: pd.DataFrame, test_x: pd.DataFrame) -> pd.DataFrame:
     out = test_x.copy()
     for col in CAT_COLS:
@@ -728,7 +804,7 @@ def predict_test(
 
     default_path = outdir / "predictions_f1.csv"
     final_path = outdir.parent / "predictions.csv"
-    pd.read_csv(default_path).to_csv(final_path, index=False)
+    shutil.copyfile(default_path, final_path)
     log(f"Wrote default submission to {final_path}")
 
 
@@ -1144,9 +1220,17 @@ def run_pipeline(args: argparse.Namespace) -> None:
     log("Top rank-ensemble threshold rows:")
     log(best_rows.to_string(index=False))
 
+    trained = fit_final_models(x, y, quick=args.quick)
+    save_trained_models(
+        trained,
+        threshold_map,
+        Path(args.model_dir) if args.model_dir else outdir / "models",
+        quick=args.quick,
+        n_splits=args.n_splits,
+    )
+
     if test_path.exists():
         test_df = load_frame(test_path)
-        trained = fit_final_models(x, y, quick=args.quick)
         predict_test(trained, test_df, threshold_map, outdir)
     else:
         log(f"No {test_path} found; skipped final submission generation.")
@@ -1179,6 +1263,11 @@ def parse_args() -> argparse.Namespace:
         "--quick",
         action="store_true",
         help="Use fewer model iterations for fast smoke tests.",
+    )
+    parser.add_argument(
+        "--model-dir",
+        default=None,
+        help="Directory for saved final full-data models. Defaults to <outdir>/models.",
     )
     return parser.parse_args()
 

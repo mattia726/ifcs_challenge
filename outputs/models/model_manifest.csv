@@ -1,0 +1,6 @@
+model,file,feature_count,training_rows
+extra_trees,extra_trees.joblib,47,13956
+lightgbm,lightgbm.joblib,47,13956
+xgboost,xgboost.joblib,47,13956
+hgb_labelcoded,hgb_labelcoded.joblib,47,13956
+catboost_native,catboost_native.joblib,47,13956

@@ -133,6 +133,7 @@
       \textbf{High-risk side}
       \begin{itemize}
         \item Cluster C is the large vulnerable middle.
+        \item Cluster D is small but debt-burdened.
         \item Cluster E combines losses and negative cash flow.
       \end{itemize}
     \end{column}
@@ -141,16 +142,48 @@
 
 \begin{frame}{PCA View of the Financial Profiles}
   \begin{columns}[T,totalwidth=\textwidth]
-    \begin{column}{0.66\textwidth}
+    \begin{column}{0.61\textwidth}
       \includegraphics[width=\textwidth]{cluster_pca.png}
     \end{column}
-    \begin{column}{0.30\textwidth}
-      \textbf{Reading the map}
+    \begin{column}{0.35\textwidth}
+      \scriptsize
+      \textbf{PCA components}
       \begin{itemize}
-        \item PCA is a linear view of the same scaled financial space used for clustering.
-        \item The profiles form a gradient from profitable cash generators to loss-making firms.
-        \item Distress risk increases as firms move toward weak margins and weak cash flow.
+        \item \textbf{PC1 = profitability and cash generation}
+        \item Explains \pct{52.7} of scaled variance.
+        \item Positive: operating income, cash flow, net margin, operating margin.
+        \item Negative: high financial-expense ratios and negative-income flags.
+        \item \textbf{PC2 = debt-service pressure}
+        \item Explains \pct{14.4} of scaled variance.
+        \item Positive: financial expenses relative to sales and operating income.
       \end{itemize}
+
+      \vspace{0.05cm}
+      \textbf{Centroids:} A/B are on the healthy PC1 side; C is weaker but central;
+      D is high on PC2; E is strongly negative on PC1.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{PCA View: Sector Interpretation}
+  \begin{columns}[T,totalwidth=\textwidth]
+    \begin{column}{0.54\textwidth}
+      \includegraphics[width=\textwidth]{cluster_pca.png}
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      \scriptsize
+      \textbf{Sector lift reading}
+      \begin{itemize}
+        \item \textbf{A Cash generators:} professional/technical services, health, software, hotels.
+        \item \textbf{B Profitable core:} wholesale trade, ICT equipment, machinery and food wholesale.
+        \item \textbf{C Thin-margin:} restaurants, food retail, bars, cleaning, motor-vehicle parts.
+        \item \textbf{D Debt-burdened:} rubber, printing, beverages, textiles, waste collection.
+        \item \textbf{E Loss-making:} R\&D, sports, real estate operations, advertising, leather/textiles.
+      \end{itemize}
+
+      \vspace{0.08cm}
+      \textbf{Important:} sectors are not clustering inputs. This is a
+      post-clustering lift analysis using sectors with at least 30 firms.
     \end{column}
   \end{columns}
 \end{frame}
