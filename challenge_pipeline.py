@@ -904,6 +904,17 @@ def run_clustering(df: pd.DataFrame, outdir: Path) -> pd.DataFrame:
         }
     )
     pca_df.to_csv(outdir / "cluster_pca_coordinates.csv", index=False)
+    pca_df.to_csv(outdir / "graph_data_cluster_pca.csv", index=False)
+
+    region_plot_df = high_region.sort_values("high_risk_cluster_share").reset_index()
+    region_plot_df["high_risk_cluster_share_pct"] = (
+        region_plot_df["high_risk_cluster_share"] * 100
+    )
+    region_plot_df["distress_rate_pct"] = region_plot_df["distress_rate"] * 100
+    region_plot_df.to_csv(
+        outdir / "graph_data_region_high_risk_cluster_share.csv",
+        index=False,
+    )
 
     try:
         import matplotlib.pyplot as plt
@@ -920,7 +931,7 @@ def run_clustering(df: pd.DataFrame, outdir: Path) -> pd.DataFrame:
         plt.close(fig)
 
         fig, ax = plt.subplots(figsize=(9, 6))
-        plot_df = high_region.sort_values("high_risk_cluster_share")
+        plot_df = region_plot_df.set_index("Region")
         ax.barh(plot_df.index, plot_df["high_risk_cluster_share"])
         ax.set_title("High-risk cluster share by region")
         ax.set_xlabel("Share in clusters C, D, or E")
