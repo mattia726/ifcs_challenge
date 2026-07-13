@@ -1,0 +1,8 @@
+{
+  "rows": 13956,
+  "alert_numeric_rows": 13437,
+  "alert_excellent_rows": 519,
+  "numeric_matches_ocf_over_finexp_1e_9": 13437,
+  "excellent_target_rate": 0.08477842003853564,
+  "max_abs_formula_diff": 5.820766091346741e-11
+}

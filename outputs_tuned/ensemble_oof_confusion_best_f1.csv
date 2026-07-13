@@ -1,0 +1,5 @@
+true_class,predicted_class_best_f1,count
+FALSE,FALSE,11704
+FALSE,TRUE,747
+TRUE,FALSE,712
+TRUE,TRUE,793

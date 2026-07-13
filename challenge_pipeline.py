@@ -273,7 +273,7 @@ def make_one_hot_models(x: pd.DataFrame, y: np.ndarray, quick: bool) -> dict[str
     try:
         from lightgbm import LGBMClassifier
 
-        lgbm_estimators = 120 if quick else 350
+        lgbm_estimators = 120 if quick else 500
         lightgbm = Pipeline(
             [
                 ("pre", preprocessor),
@@ -281,8 +281,8 @@ def make_one_hot_models(x: pd.DataFrame, y: np.ndarray, quick: bool) -> dict[str
                     "clf",
                     LGBMClassifier(
                         n_estimators=lgbm_estimators,
-                        learning_rate=0.04,
-                        num_leaves=24,
+                        learning_rate=0.04 if quick else 0.035,
+                        num_leaves=24 if quick else 12,
                         min_child_samples=35,
                         subsample=0.85,
                         colsample_bytree=0.8,
@@ -366,7 +366,8 @@ def make_catboost_model(quick: bool):
         iterations=180 if quick else 550,
         learning_rate=0.04 if quick else 0.035,
         depth=5,
-        l2_leaf_reg=8,
+        l2_leaf_reg=8 if quick else 12,
+        random_strength=1.0 if quick else 2.0,
         loss_function="Logloss",
         eval_metric="AUC",
         auto_class_weights="Balanced",
@@ -389,7 +390,8 @@ def make_hgb_model(quick: bool) -> HistGradientBoostingClassifier:
         max_iter=140 if quick else 350,
         learning_rate=0.04 if quick else 0.035,
         l2_regularization=0.1,
-        max_leaf_nodes=23,
+        max_leaf_nodes=23 if quick else 11,
+        min_samples_leaf=20 if quick else 15,
         random_state=7,
         class_weight="balanced",
     )

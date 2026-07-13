@@ -605,9 +605,9 @@ LightGBM also uses the one-hot preprocessor.
 Main settings:
 
 ```text
-n_estimators = 350
-learning_rate = 0.04
-num_leaves = 24
+n_estimators = 500
+learning_rate = 0.035
+num_leaves = 12
 min_child_samples = 35
 subsample = 0.85
 colsample_bytree = 0.8
@@ -616,7 +616,8 @@ reg_lambda = 2.0
 scale_pos_weight = negative_count / positive_count
 ```
 
-In `--quick` mode, `n_estimators` is reduced to 120.
+In `--quick` mode, `n_estimators` is reduced to 120, `learning_rate`
+is set to 0.04, and `num_leaves` is set to 24.
 
 ### 10.3 XGBoost
 
@@ -656,7 +657,8 @@ Main settings:
 max_iter = 350
 learning_rate = 0.035
 l2_regularization = 0.1
-max_leaf_nodes = 23
+max_leaf_nodes = 11
+min_samples_leaf = 15
 class_weight = balanced
 ```
 
@@ -665,6 +667,8 @@ In `--quick` mode:
 ```text
 max_iter = 140
 learning_rate = 0.04
+max_leaf_nodes = 23
+min_samples_leaf = 20
 ```
 
 ### 10.5 CatBoost
@@ -686,7 +690,8 @@ Main settings:
 iterations = 550
 learning_rate = 0.035
 depth = 5
-l2_leaf_reg = 8
+l2_leaf_reg = 12
+random_strength = 2.0
 loss_function = Logloss
 eval_metric = AUC
 auto_class_weights = Balanced
@@ -697,7 +702,35 @@ In `--quick` mode:
 ```text
 iterations = 180
 learning_rate = 0.04
+l2_leaf_reg = 8
+random_strength = 1.0
 ```
+
+### 10.6 Hyperparameter tuning pass
+
+A deterministic tuning pass is available in:
+
+```text
+tune_hyperparameters.py
+```
+
+The script keeps the same feature engineering and cross-validation structure as
+the main pipeline. It searches compact grids around the original hand-selected
+settings and writes:
+
+```text
+outputs/hyperparameter_tuning_results.csv
+outputs/hyperparameter_tuning_best_by_model.csv
+outputs/hyperparameter_tuning_best_rank_ensemble.csv
+```
+
+The final promoted configuration is selected for the class-label submission
+criterion, so it uses tuned LightGBM, tuned HistGradientBoosting, tuned
+CatBoost, and the original XGBoost setting. In the 5-fold validation run written
+to `outputs_tuned/`, the rank ensemble improved from ROC-AUC 0.880242 to
+0.880735, average precision 0.521607 to 0.523156, and best-F1 0.517105 to
+0.520854. The AP-only best blend keeps the original LightGBM as well and reaches
+average precision 0.523771, but its best-F1 is lower at 0.517505.
 
 CatBoost feature importance is exported to:
 

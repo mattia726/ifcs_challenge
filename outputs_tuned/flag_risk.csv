@@ -1,0 +1,15 @@
+flag,flag_value,count,distress_rate
+net_income_negative,False,12366,0.06323791039948246
+net_income_negative,True,1590,0.4547169811320755
+operating_income_negative,False,12663,0.0636500039485114
+operating_income_negative,True,1293,0.5406032482598608
+ocf_negative,False,12991,0.07528288815333692
+ocf_negative,True,965,0.5461139896373057
+current_taxes_zero_or_negative,False,12961,0.08340405832883266
+current_taxes_zero_or_negative,True,995,0.42613065326633165
+tax_shield_zero,False,12189,0.06415620641562064
+tax_shield_zero,True,1767,0.4091680814940577
+sales_below_median,False,6978,0.0766695328174262
+sales_below_median,True,6978,0.13900831183720264
+revenue_per_employee_below_median,False,6978,0.06649469762109488
+revenue_per_employee_below_median,True,6978,0.14918314703353397
