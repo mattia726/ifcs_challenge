@@ -1,0 +1,29 @@
+{
+  "shape": [
+    13956,
+    15
+  ],
+  "target_positive_rate": 0.10783892232731442,
+  "duplicate_company_id": 0,
+  "duplicate_rows": 0,
+  "missing_counts": {
+    "sector": 1
+  },
+  "unique_counts": {
+    "Company ID": 13956,
+    "Sales Revenue": 13940,
+    "Maximum deductible amount": 13852,
+    "Operating Income": 13852,
+    "Operating cash flow": 13838,
+    "Net income": 13723,
+    "Alert Index": 13437,
+    "Current taxes": 12442,
+    "Total financial expenses": 11771,
+    "Tax shield": 10910,
+    "sector": 306,
+    "Ateco": 268,
+    "Employees": 212,
+    "Province": 108,
+    "Financial distress": 2
+  }
+}

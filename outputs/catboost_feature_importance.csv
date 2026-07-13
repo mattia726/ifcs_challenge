@@ -1,0 +1,48 @@
+feature,importance
+net_income_per_employee,7.136733353086836
+sector,6.877432112775021
+cashflow_net_income_gap,6.447284902169924
+taxes_operating_income_ratio,5.344858749089121
+Ateco,4.526796116955264
+financial_expense_abs_operating_income_ratio,3.6147576479138865
+revenue_per_employee,3.5674674567050175
+Province,3.545787718761117
+Net income signed_log1p,3.5251625084352147
+operating_margin,3.3775799179189527
+operating_net_income_gap,3.3676841319169406
+Tax shield signed_log1p,3.2175912982630637
+operating_income_per_employee,3.100220737498049
+net_margin,3.090239086108476
+Net income,2.897951316304829
+ocf_margin,2.2665680029850788
+Alert Index numeric,2.2299411917643095
+Sales Revenue,2.2275748636532526
+Tax shield,2.187134156882566
+taxes_sales_ratio,2.119166003873351
+Alert Index signed_log1p,1.963991988288298
+financial_expense_sales_ratio,1.8044194470917876
+Operating cash flow,1.718106061766573
+Current taxes,1.5953198698071833
+tax_shield_financial_expense_ratio,1.5417174176044506
+Employees,1.50584611710403
+Operating Income signed_log1p,1.4992068828156782
+Total financial expenses signed_log1p,1.485000389445023
+Employees signed_log1p,1.4430023159089718
+Operating Income,1.3548346512992602
+Maximum deductible amount,1.3517503500128734
+ocf_per_employee,1.3281877627711793
+Sales Revenue signed_log1p,1.258290650347587
+Maximum deductible amount signed_log1p,1.2038139338184612
+financial_expenses_minus_tax_shield,1.1749965638962652
+Operating cash flow signed_log1p,1.0497918935669457
+Total financial expenses,1.0398342192546877
+Current taxes signed_log1p,0.7473503480988897
+Operating Income <= 0,0.1442434478851229
+Operating cash flow <= 0,0.041677364452285134
+Net income <= 0,0.04012586148484767
+Current taxes <= 0,0.035695344331512786
+tax_shield_cap_gap,0.00467735554603716
+Sales Revenue <= 0,0.00018849034174948625
+Alert Index is excellent,0.0
+Tax shield <= 0,0.0
+Total financial expenses <= 0,0.0
